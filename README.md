@@ -12,11 +12,5 @@ For some devices with strict OS skins, if that fails, you can manually grant the
 adb shell pm grant com.aistudio.hzwidget.rtywq android.permission.WRITE_SECURE_SETTINGS
 ```
 
-## Features
-- Material You Design.
-- Absolute minimal APK size.
-- Scans all device-supported refresh rates dynamically.
-- Simple home-screen widget with quick toggles.
-
 ## License
 MIT License. See `LICENSE` file for details.

@@ -31,9 +31,7 @@ class HzWidgetProvider : AppWidgetProvider() {
             // Trigger update of all widgets to reflect active state
             val appWidgetManager = AppWidgetManager.getInstance(context)
             val appWidgetIds = appWidgetManager.getAppWidgetIds(ComponentName(context, HzWidgetProvider::class.java))
-            for (appWidgetId in appWidgetIds) {
-                updateAppWidget(context, appWidgetManager, appWidgetId)
-            }
+            appWidgetManager.notifyAppWidgetViewDataChanged(appWidgetIds, R.id.widget_grid)
         }
     }
 
@@ -55,53 +53,26 @@ class HzWidgetProvider : AppWidgetProvider() {
     }
 
     private fun updateAppWidget(context: Context, appWidgetManager: AppWidgetManager, appWidgetId: Int) {
-        val displayManager = context.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager
-        val display = displayManager.getDisplay(Display.DEFAULT_DISPLAY)
-        val modes = display.supportedModes
-        val rates = modes.map { it.refreshRate.toInt() }.toSortedSet().toList()
-
         val views = RemoteViews(context.packageName, R.layout.hz_widget)
         
-        val buttonIds = listOf(R.id.btn_1, R.id.btn_2, R.id.btn_3, R.id.btn_4, R.id.btn_5)
+        val intent = Intent(context, HzWidgetService::class.java).apply {
+            putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+            data = android.net.Uri.parse(toUri(Intent.URI_INTENT_SCHEME))
+        }
         
-        // Hide all buttons initially
-        buttonIds.forEach { id ->
-            views.setViewVisibility(id, View.GONE)
+        views.setRemoteAdapter(R.id.widget_grid, intent)
+        views.setEmptyView(R.id.widget_grid, android.R.id.empty)
+        
+        val clickIntentTemplate = Intent(context, HzWidgetProvider::class.java).apply {
+            action = ACTION_SET_HZ
         }
-
-        // Current active hz (approximation)
-        val currentPeak = try {
-            Settings.System.getFloat(context.contentResolver, "peak_refresh_rate", 60f).toInt()
-        } catch (e: Settings.SettingNotFoundException) {
-            60
-        }
-
-        // Show buttons for available rates
-        for (i in 0 until minOf(rates.size, buttonIds.size)) {
-            val hz = rates[i]
-            val btnId = buttonIds[i]
-            
-            views.setViewVisibility(btnId, View.VISIBLE)
-            views.setTextViewText(btnId, "${hz}Hz")
-            
-            if (hz == currentPeak) {
-                views.setInt(btnId, "setBackgroundResource", R.drawable.btn_bg_active)
-            } else {
-                views.setInt(btnId, "setBackgroundResource", R.drawable.btn_bg_inactive)
-            }
-
-            val intent = Intent(context, HzWidgetProvider::class.java).apply {
-                action = ACTION_SET_HZ
-                putExtra(EXTRA_HZ, hz)
-            }
-            val pendingIntent = PendingIntent.getBroadcast(
-                context,
-                hz,
-                intent,
-                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-            )
-            views.setOnClickPendingIntent(btnId, pendingIntent)
-        }
+        val clickPendingIntentTemplate = PendingIntent.getBroadcast(
+            context,
+            0,
+            clickIntentTemplate,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
+        )
+        views.setPendingIntentTemplate(R.id.widget_grid, clickPendingIntentTemplate)
 
         appWidgetManager.updateAppWidget(appWidgetId, views)
     }
