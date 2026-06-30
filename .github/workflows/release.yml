@@ -28,6 +28,9 @@ jobs:
           gradle-version: wrapper
           validate-wrappers: false
 
+      - name: Make gradlew executable
+        run: chmod +x gradlew
+
       - name: Build Release APK
         run: ./gradlew assembleRelease
 
