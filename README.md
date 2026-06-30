@@ -1,11 +1,22 @@
-<div align="center">
+# Hz Widget
 
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
+A minimal Android application that allows you to quickly toggle your device's display refresh rate (e.g. 60Hz, 90Hz, 120Hz) directly from a home screen widget. The app scans for the available refresh rates supported by your display and adds them to the widget.
 
-  <h1>Built with AI Studio</h2>
+Built using Jetpack Compose for the main screen and Material You for the widget UI, with an extremely minimal footprint.
 
-  <p>The fastest path from prompt to production with Gemini.</p>
+## Permissions Required
+Because changing system settings (like refresh rate) requires elevated permissions, the app will request the **Modify System Settings** permission when you first open it. 
+For some devices with strict OS skins, if that fails, you can manually grant the secure settings permission via ADB using your computer:
 
-  <a href="https://aistudio.google.com/apps">Start building</a>
+```sh
+adb shell pm grant com.aistudio.hzwidget.rtywq android.permission.WRITE_SECURE_SETTINGS
+```
 
-</div>
+## Features
+- Material You Design.
+- Absolute minimal APK size.
+- Scans all device-supported refresh rates dynamically.
+- Simple home-screen widget with quick toggles.
+
+## License
+MIT License. See `LICENSE` file for details.
